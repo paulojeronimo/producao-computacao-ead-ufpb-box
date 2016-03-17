@@ -75,4 +75,4 @@ d=~/.dblatex; rm -rf $d; mkdir -p $d && cd $d
 
 unzip -o $softwares_dir/$dblatex_config_file > /dev/null
 mv ${dblatex_config_dir}/dblatex-computacao-ufpb/* .
-rm -rf $dblatex_config_project
+rm -rf $dblatex_config_dir

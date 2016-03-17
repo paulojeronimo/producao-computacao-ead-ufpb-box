@@ -1,0 +1,7 @@
+.vagrant
+README.*
+!README.md
+config.yaml
+livros/*
+!livros/README.md
+softwares

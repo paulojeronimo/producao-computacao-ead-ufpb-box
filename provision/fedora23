@@ -1,0 +1,78 @@
+#!/bin/bash
+# {author: Paulo Jeronimo; email: paulojeronimo@gmail.com; twitter: @paulojeronimo}
+#
+# Script para provisionamento de um ambiente Fedora 23
+# Utilizado para instalar bibliotecas e dependências necessárias a execução das ferramentas de produção de livros da UFPB
+set +x
+
+[ "$1" ] && BOXNAME=`basename "$1"`
+
+# Para selecionar o mirror mais rápido:
+#f=/etc/dnf/dnf.conf
+#grep -q fatestmirror $f || echo -e 'fatestmirror=true\nminrate=6000k' | sudo tee -a $f
+
+# Para selecionar especificamente o mirror http://fedora.c3sl.ufpr.br:
+for f in fedora fedora-updates
+do
+    echo "Configurando o arquivo /etc/yum.repos.d/${f}.repo ..."
+    sudo sed '
+        s,^\(metalink=\),#\1,g
+        s,^#\(baseurl=\)http://download.fedoraproject.org/pub/fedora,\1http://fedora.c3sl.ufpr.br,g
+    ' -i /etc/yum.repos.d/${f}.repo
+done 
+
+echo "Instalando os pacotes necessários para a execução de um projeto Middleman ..."
+sudo dnf --best --allowerasing -y install \
+  gcc-c++ \
+  ruby \
+  ruby-devel \
+  libxml2-devel \
+  libxslt-devel \
+  git \
+  redhat-rpm-config \
+  texlive-scheme-full \
+  asciidoc \
+  dblatex \
+  qrencode \
+  java-1.8.0-openjdk \
+  tree \
+  vim
+
+echo "Instalando o rake ..."
+gem install rake
+
+echo "Baixando os softwares necessários ..."
+softwares_dir=/vagrant/softwares; mkdir -p $softwares_dir && cd $softwares_dir
+
+echo "Baixando filtros do Asciidoc ..."
+wget --no-verbose -c https://asciidoc-diag-filter.googlecode.com/files/diag_filter.zip
+wget --no-verbose -c http://asciidoc-ditaa-filter.googlecode.com/files/ditaa-filter-1.1.zip
+wget --no-verbose -c http://asciidoc-qrencode-filter.googlecode.com/files/qrcode-filter-1.0.zip
+
+echo "Baixando o Sejda (http://www.sejda.org/) ..."
+wget --no-verbose -c https://github.com/torakiki/sejda/releases/download/v2.0.0.M8/sejda-console-2.0.0.M8-bin.zip
+
+dblatex_config_url=https://github.com/ufpb-computacao/producao-computacao-ead-ufpb
+dblatex_config_project=${dblatex_config_url##*/}
+dblatex_config_dir=${dblatex_config_project}-master
+dblatex_config_file=${dblatex_config_dir}.zip
+
+echo "Baixando configurações específicas do dblatex para os livros da UFPB ..."
+echo "(configurações disponíveis na URL $dblatex_config_url)"
+wget --no-verbose -c $dblatex_config_url/archive/master.zip -O $dblatex_config_file
+
+echo "Instalando os filtros do Asciidoc ..."
+asciidoc --filter install diag_filter.zip
+asciidoc --filter install ditaa-filter-1.1.zip
+asciidoc --filter install qrcode-filter-1.0.zip
+
+echo "Instalando o Sejda ..."
+sudo unzip -o -d /opt sejda-console-2.0.0.M8-bin.zip > /dev/null
+(cd /opt; sudo ln -sf sejda-console-2.0.0.M8 sejda)
+
+echo "Configurando o dblatex ..."
+d=~/.dblatex; rm -rf $d; mkdir -p $d && cd $d
+
+unzip -o $softwares_dir/$dblatex_config_file > /dev/null
+mv ${dblatex_config_dir}/dblatex-computacao-ufpb/* .
+rm -rf $dblatex_config_project

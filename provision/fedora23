@@ -21,7 +21,7 @@ do
     ' -i /etc/yum.repos.d/${f}.repo
 done 
 
-echo "Instalando os pacotes necessários para a execução de um projeto Middleman ..."
+echo "Instalando pacotes necessários para a construção de livros ..."
 sudo dnf --best --allowerasing -y install \
   gcc-c++ \
   ruby \
@@ -36,10 +36,11 @@ sudo dnf --best --allowerasing -y install \
   qrencode \
   java-1.8.0-openjdk \
   tree \
-  vim
+  vim \
+  asciidoctor
 
-echo "Instalando o rake ..."
-gem install rake
+echo "Instalando o rake e o bunlder ..."
+gem install rake bundler
 
 echo "Baixando os softwares necessários ..."
 softwares_dir=/vagrant/softwares; mkdir -p $softwares_dir && cd $softwares_dir

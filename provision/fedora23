@@ -39,8 +39,11 @@ sudo dnf --best --allowerasing -y install \
   vim \
   asciidoctor
 
-echo "Instalando o rake e o bunlder ..."
-gem install rake bundler
+echo "Instalando gems Ruby ..."
+gem install \
+  rake \
+  bundler \
+  octokit
 
 echo "Baixando os softwares necessários ..."
 softwares_dir=/vagrant/softwares; mkdir -p $softwares_dir && cd $softwares_dir
